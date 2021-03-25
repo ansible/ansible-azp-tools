@@ -133,7 +133,7 @@ def process(namespace, name, branch, yaml_path):
     tests_found = set()
 
     for test in tests:
-        parts = test.split('/')
+        parts = test.split('@')[0].split('/')
 
         if namespace == 'ansible' and name == 'ansible':
             ansible_branch = 'devel'
