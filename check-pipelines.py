@@ -1,33 +1,122 @@
 #!/usr/bin/env python
+# PYTHON_ARGCOMPLETE_OK
 """A simple script to check for out-of-date Azure Pipelines configurations testing against ansible-core devel branch."""
 
 from __future__ import annotations
 
+import argparse
 import os
+import typing as t
+
+try:
+    import argcomplete
+except ImportError:
+    argcomplete = None
 
 import yaml
 
 
-def main():
-    base_path = os.path.expanduser('~/.ansible/azp-tools/repos')
-    collections_path = os.path.join(base_path, 'ansible-collections')
-    collections = os.listdir(collections_path)
-    collection_branches = {collection: os.listdir(os.path.join(collections_path, collection)) for collection in collections}
+def main() -> None:
+    parser = argparse.ArgumentParser()
 
-    boilerplate()
+    subparsers = parser.add_subparsers(metavar='command', dest='command', required=True)
 
-    for collection, branches in collection_branches.items():
-        namespace, name = collection.split('.')
+    matrix_parser = subparsers.add_parser('matrix', help='check matrix configurations')
+    matrix_parser.set_defaults(func=check_matrix)
 
-        for branch in branches:
-            yaml_path = os.path.join(collections_path, collection, branch, 'ansible_collections', namespace, name, '.azure-pipelines', 'azure-pipelines.yml')
+    container_parser = subparsers.add_parser('container', help='check default containers')
+    container_parser.set_defaults(func=check_container)
 
-            process(namespace, name, branch, yaml_path)
+    if argcomplete:
+        argcomplete.autocomplete(parser)
 
-    process('ansible', 'ansible', 'devel', os.path.join(base_path, 'ansible/ansible/devel/.azure-pipelines/azure-pipelines.yml'))
+    args = parser.parse_args()
+
+    settings = Settings()
+
+    args.func(settings)
 
 
-def boilerplate():
+class Config:
+    def __init__(self, namespace: str, name: str, branch: str, path: str) -> None:
+        self.namespace = namespace
+        self.name = name
+        self.branch = branch
+        self.path = path
+
+        with open(path) as yaml_file:
+            self.yaml = yaml.load(yaml_file, Loader=yaml.SafeLoader)
+
+    def __iter__(self) -> t.Tuple[str, str, str, str]:
+        for item in self.namespace, self.name, self.branch, self.path:
+            yield item
+
+    def __str__(self):
+        return f'{self.namespace}.{self.name}:{self.branch}'
+
+
+class Settings:
+    def __init__(self):
+        self.base_path = os.path.expanduser('~/.ansible/azp-tools/repos')
+        self.collections_path = os.path.join(self.base_path, 'ansible-collections')
+        self.ansible_path = os.path.join(self.base_path, 'ansible/ansible')
+        self.collections = os.listdir(self.collections_path)
+        self.collection_branches = {collection: os.listdir(os.path.join(self.collections_path, collection)) for collection in self.collections}
+        self.ansible_branches = os.listdir(self.ansible_path)
+        self.configs = []
+
+        for collection, branches in self.collection_branches.items():
+            namespace, name = collection.split('.')
+
+            for branch in branches:
+                path = os.path.join(self.collections_path, collection, branch, 'ansible_collections', namespace, name, '.azure-pipelines/azure-pipelines.yml')
+
+                self.configs.append(Config(namespace, name, branch, path))
+
+        for branch in self.ansible_branches:
+            path = os.path.join(self.ansible_path, branch, '.azure-pipelines/azure-pipelines.yml')
+
+            self.configs.append(Config('ansible', 'ansible', branch, path))
+
+
+def check_container(settings: Settings) -> None:
+    expected_image = 'quay.io/ansible/azure-pipelines-test-container:1.9.0'
+
+    boilerplate = f'''
+### Azure Pipelines Test Container Update
+
+Projects using Azure Pipelines should use the current test container for all branches.
+
+The current container is: `{expected_image}`
+
+A report on each project's status can be found below.
+
+#### Checklist
+'''
+
+    print(boilerplate)
+
+    for config in settings.configs:
+        containers = config.yaml['resources']['containers']
+        default_container = [c for c in containers if c['container'] == 'default'][0]
+        default_image = default_container['image']
+
+        checkmark = 'X' if default_image == expected_image else ' '
+
+        print(f'- [{checkmark}] {config}')
+
+
+def check_matrix(settings: Settings) -> None:
+    matrix_boilerplate()
+
+    for config in settings.configs:
+        if config.namespace == 'ansible' and config.name == 'ansible' and config.branch != 'devel':
+            continue
+
+        process_matrix(config)
+
+
+def matrix_boilerplate() -> None:
     print('''
 ### Azure Pipelines Test Matrix Updates
 
@@ -55,11 +144,10 @@ The types of changes are as follows:
 ''')
 
 
-def process(namespace, name, branch, yaml_path):
-    with open(yaml_path) as yaml_file:
-        config = yaml.load(yaml_file, Loader=yaml.SafeLoader)
+def process_matrix(config: Config) -> None:
+    namespace, name, branch, path = config
 
-    stages = config['stages']
+    stages = config.yaml['stages']
     tests = []
 
     # Every platform/version combination known to ansible-test in the devel branch should be listed in one of the two lists below.
