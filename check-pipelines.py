@@ -227,7 +227,7 @@ def process_matrix(config: Config) -> None:
             ansible_branch = 'devel'
             test_parts = parts
         else:
-            if parts[0] not in ('devel', '2.9', '2.10'):
+            if parts[0] not in ('devel', '2.9', '2.10', '2.11'):
                 raise Exception(f'Unexpected branch found in: {test}')
 
             ansible_branch = parts[0]
