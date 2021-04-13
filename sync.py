@@ -10,6 +10,7 @@ import typing as t
 import urllib.parse
 import re
 import github
+import shutil
 import sys
 
 import azure.devops.connection
@@ -154,6 +155,15 @@ def update_repos(base_path: str, repos: t.Dict[str, t.List[str]]) -> None:
             else:
                 os.makedirs(os.path.dirname(path), exist_ok=True)
                 subprocess.run(['git', 'clone', f'https://github.com/{repo}', '--branch', branch, path], stdout=stderr, check=True)
+
+        existing_branches = os.listdir(os.path.join(base_path, repo))
+        purge_branches = set(existing_branches) - set(branches)
+
+        for branch in purge_branches:
+            print(f'  {branch} - purge')
+
+            path = os.path.join(base_path, repo, branch)
+            shutil.rmtree(path)
 
 
 def main() -> None:
