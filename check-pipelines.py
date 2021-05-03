@@ -191,6 +191,12 @@ def process_matrix(config: Config) -> None:
         'rhel/8.2': 'rhel',
     }
 
+    # Entries here are currently used in the ansible-core matrix, but are not recommended for collections.
+    special = {
+        'ios/csr1000v': 'ios',
+        'vyos/1.1.8': 'vyos',
+    }
+
     for stage in stages:
         jobs = stage['jobs']
 
@@ -240,27 +246,31 @@ def process_matrix(config: Config) -> None:
 
         test_type = test_parts[0]
 
-        if test_type in ('sanity', 'units', 'aws', 'cloud', 'hcloud', 'windows', 'galaxy', 'generic', 'i'):
+        if test_type == 'i':
+            test_parts = test_parts[1:]
+            test_type = test_parts[0]
+
+        if test_type in ('sanity', 'units', 'aws', 'cloud', 'hcloud', 'windows', 'galaxy', 'generic'):
             continue
 
         if test_type == 'linux':
             test_name = test_parts[1]
-        elif test_type in ('freebsd', 'osx', 'macos', 'rhel'):
+        elif test_type in ('freebsd', 'osx', 'macos', 'rhel', 'ios', 'vyos'):
             test_name = f'{test_type}/{test_parts[1]}'
         else:
             test_name = None
 
         if not test_name:
-            raise Exception(f'Test name not extracted: {test_type}')
+            raise Exception(f'Test name not extracted: {test}')
 
         tests_found.add(test_name)
 
-    unknown = tests_found - set(expected.keys()) - set(deprecated.keys())
+    unknown = tests_found - set(expected.keys()) - set(deprecated.keys()) - set(special.keys())
 
     if unknown:
         raise Exception(f'Unknown test name: {unknown}')
 
-    platforms = {test_name: expected.get(test_name) or deprecated.get(test_name) for test_name in tests_found}
+    platforms = {test_name: expected.get(test_name) or deprecated.get(test_name) or special.get(test_name) for test_name in tests_found}
 
     if None in platforms.values():
         raise Exception(f'Missing platform information: {platforms}')
