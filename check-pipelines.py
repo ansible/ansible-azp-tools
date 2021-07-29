@@ -171,7 +171,7 @@ def process_matrix(config: Config) -> None:
         'freebsd/13.0': 'freebsd',
         'macos/11.1': 'macos',
         'rhel/7.9': 'rhel',
-        'rhel/8.3': 'rhel',
+        'rhel/8.4': 'rhel',
     }
 
     # Entries here are deprecated and will be removed from ansible-test in the future.
@@ -189,6 +189,7 @@ def process_matrix(config: Config) -> None:
         'rhel/7.8': 'rhel',
         'rhel/8.1': 'rhel',
         'rhel/8.2': 'rhel',
+        'rhel/8.3': 'rhel',
     }
 
     # Entries here are currently used in the ansible-core matrix, but are not recommended for collections.
