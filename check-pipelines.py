@@ -201,9 +201,7 @@ The types of changes are as follows:
         # Entries here are currently used in the ansible-core test matrix.
         expected = {
             'alpine3': 'alpine',
-            'centos6': 'centos',
             'centos7': 'centos',
-            'centos8': 'centos',
             'fedora33': 'fedora',
             'fedora34': 'fedora',
             'opensuse15': 'opensuse',
@@ -219,6 +217,8 @@ The types of changes are as follows:
     
         # Entries here are deprecated and will be removed from ansible-test in the future.
         deprecated = {
+            'centos6': 'centos',
+            'centos8': 'centos',
             'fedora30': 'fedora',
             'fedora31': 'fedora',
             'fedora32': 'fedora',
