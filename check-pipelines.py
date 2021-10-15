@@ -25,6 +25,12 @@ def main() -> None:
     matrix_parser = subparsers.add_parser('matrix', help='check matrix configurations')
     matrix_parser.set_defaults(command=CheckMatrix)
 
+    matrix_parser.add_argument(
+        '--minimal',
+        action='store_true',
+        help='omit current and skipped projects',
+    )
+
     actions = ['add', 'remove', 'consider']
     matrix_parser.add_argument(
         '--action',
@@ -130,6 +136,7 @@ A report on each project's status can be found below.
 class CheckMatrix:
     def __init__(self, args: argparse.Namespace, settings: Settings) -> None:
         self.actions: t.List[str] = args.actions or ['add', 'remove', 'consider']
+        self.minimal: bool = args.minimal
         self.settings = settings
 
     def run(self) -> None:
@@ -150,6 +157,14 @@ class CheckMatrix:
 
         action_text = '\n'.join(f'- {action.title()} - {description}' for action, description in actions.items() if action in self.actions)
 
+        statuses = dict(
+            skipped='The project was skipped because it does not use platforms that were evaluated. No action is necessary.',
+            current='The project uses platforms that were evaluated, and all are current. No action is necessary.',
+            update='The project uses platforms that were evaluated, and one or more changes are indicated.',
+        )
+
+        status_text = '\n'.join(f'- {status.title()} - {description}' for status, description in statuses.items() if status == 'update' or not self.minimal)
+
         print(f'''
 ### Azure Pipelines Test Matrix Updates
 
@@ -161,9 +176,7 @@ A report on each project's status, as well as the required and recommended actio
 
 Each project is given a status as follows:
 
-- `Skipped` - The project was skipped because it does not use platforms that were evaluated. No action is necessary.
-- `Current` - The project uses platforms that were evaluated, and all are current. No action is necessary.
-- `Update` - The project uses platforms that were evaluated, and one or more changes are indicated.
+{status_text}
 
 The types of changes are as follows:
 
@@ -309,7 +322,9 @@ The types of changes are as follows:
         platforms_used = sorted(platforms.values())
     
         if not platforms_used:
-            print(f'- [X] {namespace}.{name}:{branch} - Skipped')
+            if not self.minimal:
+                print(f'- [X] {namespace}.{name}:{branch} - Skipped')
+
             return
 
         to_remove = (set(deprecated.keys()) & tests_found
@@ -322,7 +337,9 @@ The types of changes are as follows:
                        if 'consider' in self.actions else set())
     
         if not to_add and not to_consider and not to_remove:
-            print(f'- [X] {namespace}.{name}:{branch} - Current')
+            if not self.minimal:
+                print(f'- [X] {namespace}.{name}:{branch} - Current')
+
             return
     
         print(f'- [ ] {namespace}.{name}:{branch} - Update')
