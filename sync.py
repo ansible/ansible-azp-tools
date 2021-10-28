@@ -124,7 +124,7 @@ def find_repos() -> t.Dict[str, t.List[str]]:
         if repo_name == 'ansible/ansible':
             stable_matches = [m.group('version').split('.') for m in [re.search('stable-(?P<version>[0-9]+.[0-9]+)', b) for b in all_branch_names] if m]
             stable_versions = sorted([(int(m[0]), int(m[1])) for m in stable_matches], reverse=True)
-            latest_versions = stable_versions[:3]
+            latest_versions = stable_versions[:4]
             filtered_branch_names = ['devel'] + [f'stable-{v[0]}.{v[1]}' for v in latest_versions]
         else:
             filtered_branch_names = [b for b in all_branch_names if re.search('^(devel|main|master|stable-.*)$', b)]
