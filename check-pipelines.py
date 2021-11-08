@@ -213,6 +213,7 @@ The types of changes are as follows:
             'macos/11.1': 'macos',
             'rhel/7.9': 'rhel',
             'rhel/8.4': 'rhel',
+            'rhel/9.0b': 'rhel',
         }
     
         # Entries here are deprecated and will be removed from ansible-test in the future.
