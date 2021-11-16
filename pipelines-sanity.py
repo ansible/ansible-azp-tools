@@ -18,7 +18,7 @@ except ImportError:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument('--check', action='store_true')
-    parser.add_argument('--test', action='append')
+    parser.add_argument('--test', action='append', default=[])
 
     if argcomplete:
         argcomplete.autocomplete(parser)
