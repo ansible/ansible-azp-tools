@@ -212,7 +212,7 @@ The types of changes are as follows:
             'freebsd/13.0': 'freebsd',
             'macos/11.1': 'macos',
             'rhel/7.9': 'rhel',
-            'rhel/8.4': 'rhel',
+            'rhel/8.5': 'rhel',
             'rhel/9.0b': 'rhel',
         }
     
@@ -235,6 +235,7 @@ The types of changes are as follows:
             'rhel/8.1': 'rhel',
             'rhel/8.2': 'rhel',
             'rhel/8.3': 'rhel',
+            'rhel/8.4': 'rhel',
         }
     
         # Entries here are currently used in the ansible-core matrix, but are not recommended for collections.
