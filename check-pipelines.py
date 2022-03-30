@@ -205,7 +205,6 @@ The types of changes are as follows:
             'fedora34': 'fedora',
             'fedora35': 'fedora',
             'opensuse15': 'opensuse',
-            'opensuse15py2': 'opensuse',
             'ubuntu1804': 'ubuntu',
             'ubuntu2004': 'ubuntu',
             'freebsd/12.3': 'freebsd',
@@ -224,6 +223,7 @@ The types of changes are as follows:
             'fedora31': 'fedora',
             'fedora32': 'fedora',
             'fedora33': 'fedora',
+            'opensuse15py2': 'opensuse',
             'ubuntu1604': 'ubuntu',
             'freebsd/11.1': 'freebsd',
             'freebsd/11.4': 'freebsd',
@@ -284,7 +284,7 @@ The types of changes are as follows:
                 ansible_branch = 'devel'
                 test_parts = parts
             else:
-                if parts[0] not in ('devel', '2.9', '2.10', '2.11', '2.12'):
+                if parts[0] not in ('devel', '2.9', '2.10', '2.11', '2.12', '2.13'):
                     raise Exception(f'Unexpected branch found in: {test}')
     
                 ansible_branch = parts[0]
@@ -310,6 +310,9 @@ The types of changes are as follows:
                 test_name = None
     
             if not test_name:
+                if test_parts[0] == 'linux-community':
+                    continue
+
                 raise Exception(f'Test name not extracted: {test}')
     
             tests_found.add(test_name)
