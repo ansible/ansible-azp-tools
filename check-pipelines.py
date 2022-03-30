@@ -310,6 +310,9 @@ The types of changes are as follows:
                 test_name = None
     
             if not test_name:
+                if test_parts[0] == 'linux-community':
+                    continue
+
                 raise Exception(f'Test name not extracted: {test}')
     
             tests_found.add(test_name)
