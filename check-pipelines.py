@@ -284,7 +284,7 @@ The types of changes are as follows:
                 ansible_branch = 'devel'
                 test_parts = parts
             else:
-                if parts[0] not in ('devel', '2.9', '2.10', '2.11', '2.12'):
+                if parts[0] not in ('devel', '2.9', '2.10', '2.11', '2.12', '2.13'):
                     raise Exception(f'Unexpected branch found in: {test}')
     
                 ansible_branch = parts[0]
