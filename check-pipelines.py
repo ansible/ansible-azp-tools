@@ -8,6 +8,7 @@ import abc
 import argparse
 import contextlib
 import os
+import re
 import typing as t
 
 try:
@@ -320,13 +321,15 @@ The types of changes are as follows:
                     continue
 
                 raise Exception(f'Test name not extracted: {test}')
-    
+
+            test_name = re.sub('-pypi-latest$', '', test_name)  # work-around for community.docker collection
+
             tests_found.add(test_name)
     
         unknown = tests_found - set(expected.keys()) - set(deprecated.keys()) - set(special.keys())
     
         if unknown:
-            raise Exception(f'Unknown test name: {unknown}')
+            raise Exception(f'[{config.path}] Unknown test name: {unknown}')
     
         platforms = {test_name: expected.get(test_name) or deprecated.get(test_name) or special.get(test_name) for test_name in tests_found}
     
