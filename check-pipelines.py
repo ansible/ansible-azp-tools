@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import abc
 import argparse
+import contextlib
 import os
 import typing as t
 
@@ -88,7 +89,8 @@ class Settings:
             for branch in branches:
                 path = os.path.join(self.collections_path, collection, branch, 'ansible_collections', namespace, name, '.azure-pipelines/azure-pipelines.yml')
 
-                self.configs.append(Config(namespace, name, branch, path))
+                with contextlib.suppress(FileNotFoundError):
+                    self.configs.append(Config(namespace, name, branch, path))
 
         for branch in self.ansible_branches:
             path = os.path.join(self.ansible_path, branch, '.azure-pipelines/azure-pipelines.yml')
