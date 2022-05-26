@@ -6,7 +6,9 @@ from __future__ import annotations
 
 import abc
 import argparse
+import contextlib
 import os
+import re
 import typing as t
 
 try:
@@ -88,7 +90,8 @@ class Settings:
             for branch in branches:
                 path = os.path.join(self.collections_path, collection, branch, 'ansible_collections', namespace, name, '.azure-pipelines/azure-pipelines.yml')
 
-                self.configs.append(Config(namespace, name, branch, path))
+                with contextlib.suppress(FileNotFoundError):
+                    self.configs.append(Config(namespace, name, branch, path))
 
         for branch in self.ansible_branches:
             path = os.path.join(self.ansible_path, branch, '.azure-pipelines/azure-pipelines.yml')
@@ -202,17 +205,17 @@ The types of changes are as follows:
         expected = {
             'alpine3': 'alpine',
             'centos7': 'centos',
-            'fedora34': 'fedora',
             'fedora35': 'fedora',
+            'fedora36': 'fedora',
             'opensuse15': 'opensuse',
-            'ubuntu1804': 'ubuntu',
             'ubuntu2004': 'ubuntu',
+            'ubuntu2204': 'ubuntu',
             'freebsd/12.3': 'freebsd',
-            'freebsd/13.0': 'freebsd',
+            'freebsd/13.1': 'freebsd',
             'macos/12.0': 'macos',
             'rhel/7.9': 'rhel',
-            'rhel/8.5': 'rhel',
-            'rhel/9.0b': 'rhel',
+            'rhel/8.6': 'rhel',
+            'rhel/9.0': 'rhel',
         }
     
         # Entries here are deprecated and will be removed from ansible-test in the future.
@@ -223,12 +226,15 @@ The types of changes are as follows:
             'fedora31': 'fedora',
             'fedora32': 'fedora',
             'fedora33': 'fedora',
+            'fedora34': 'fedora',
             'opensuse15py2': 'opensuse',
             'ubuntu1604': 'ubuntu',
+            'ubuntu1804': 'ubuntu',
             'freebsd/11.1': 'freebsd',
             'freebsd/11.4': 'freebsd',
             'freebsd/12.1': 'freebsd',
             'freebsd/12.2': 'freebsd',
+            'freebsd/13.0': 'freebsd',
             'osx/10.11': 'macos',
             'macos/10.15': 'macos',
             'macos/11.1': 'macos',
@@ -238,6 +244,7 @@ The types of changes are as follows:
             'rhel/8.2': 'rhel',
             'rhel/8.3': 'rhel',
             'rhel/8.4': 'rhel',
+            'rhel/8.5': 'rhel',
         }
     
         # Entries here are currently used in the ansible-core matrix, but are not recommended for collections.
@@ -314,13 +321,15 @@ The types of changes are as follows:
                     continue
 
                 raise Exception(f'Test name not extracted: {test}')
-    
+
+            test_name = re.sub('-pypi-latest$', '', test_name)  # work-around for community.docker collection
+
             tests_found.add(test_name)
     
         unknown = tests_found - set(expected.keys()) - set(deprecated.keys()) - set(special.keys())
     
         if unknown:
-            raise Exception(f'Unknown test name: {unknown}')
+            raise Exception(f'[{config.path}] Unknown test name: {unknown}')
     
         platforms = {test_name: expected.get(test_name) or deprecated.get(test_name) or special.get(test_name) for test_name in tests_found}
     
