@@ -194,7 +194,6 @@ The types of changes are as follows:
         namespace, name, branch, path = config
     
         stages = config.yaml['stages']
-        tests = []
     
         # Every platform/version combination known to ansible-test in the devel branch should be listed in one of the two lists below.
         # The key is the value used for --remote or --docker.
@@ -252,10 +251,13 @@ The types of changes are as follows:
             'ios/csr1000v': 'ios',
             'vyos/1.1.8': 'vyos',
         }
-    
+
+        tests: list[tuple[str, str | None]] = []
+
         for stage in stages:
             jobs = stage['jobs']
-    
+            stage_display_name = stage.get('displayName', stage['stage'])
+
             for job in jobs:
                 template = job['template']
     
@@ -275,27 +277,34 @@ The types of changes are as follows:
                         for target in targets:
                             raw_test = target.get('test', target.get('name'))
                             test = test_format.format(raw_test, group)
-                            tests.append(test)
+                            tests.append((test, stage_display_name))
                 else:
                     for target in targets:
                         raw_test = target.get('test', target.get('name'))
                         test = test_format.format(raw_test)
-                        tests.append(test)
+                        tests.append((test, stage_display_name))
     
         tests_found = set()
-    
-        for test in tests:
+        known_ansible_branches = ('devel', '2.9', '2.10', '2.11', '2.12', '2.13')
+
+        for test, stage_display_name in tests:
             parts = test.split('@')[0].split('/')
     
             if namespace == 'ansible' and name == 'ansible':
                 ansible_branch = 'devel'
                 test_parts = parts
             else:
-                if parts[0] not in ('devel', '2.9', '2.10', '2.11', '2.12', '2.13'):
+                if parts[0] not in known_ansible_branches:
                     raise Exception(f'Unexpected branch found in: {test}')
     
                 ansible_branch = parts[0]
                 test_parts = parts[1:]
+
+                if (
+                        any(supported_ansible_branch in stage_display_name for supported_ansible_branch in known_ansible_branches) and
+                        ansible_branch not in stage_display_name
+                ):
+                    print(f'- [ ] {namespace}.{name}:{branch} - Branch "{ansible_branch}" does not match stage "{stage_display_name}"')
     
             if ansible_branch != 'devel':
                 continue
