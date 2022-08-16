@@ -204,7 +204,6 @@ The types of changes are as follows:
         expected = {
             'alpine3': 'alpine',
             'centos7': 'centos',
-            'fedora35': 'fedora',
             'fedora36': 'fedora',
             'opensuse15': 'opensuse',
             'ubuntu2004': 'ubuntu',
@@ -226,6 +225,7 @@ The types of changes are as follows:
             'fedora32': 'fedora',
             'fedora33': 'fedora',
             'fedora34': 'fedora',
+            'fedora35': 'fedora',
             'opensuse15py2': 'opensuse',
             'ubuntu1604': 'ubuntu',
             'ubuntu1804': 'ubuntu',
