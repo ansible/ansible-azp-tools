@@ -276,6 +276,9 @@ The types of changes are as follows:
             jobs = stage['jobs']
             stage_display_name = stage.get('displayName', stage['stage'])
 
+            if stage_display_name == 'Dependencies':
+                continue  # community.windows uses this to setup dependencies, not run tests
+
             for job in jobs:
                 template = job['template']
     
