@@ -208,12 +208,16 @@ The types of changes are as follows:
             'opensuse15': 'opensuse',
             'ubuntu2004': 'ubuntu',
             'ubuntu2204': 'ubuntu',
+            'alpine/3.16': 'alpine',
+            'fedora/36': 'fedora',
             'freebsd/12.3': 'freebsd',
             'freebsd/13.1': 'freebsd',
             'macos/12.0': 'macos',
             'rhel/7.9': 'rhel',
             'rhel/8.6': 'rhel',
             'rhel/9.0': 'rhel',
+            'ubuntu/20.04': 'ubuntu',
+            'ubuntu/22.04': 'ubuntu',
         }
     
         # Entries here are deprecated and will be removed from ansible-test in the future.
@@ -320,7 +324,7 @@ The types of changes are as follows:
     
             if test_type == 'linux':
                 test_name = test_parts[1]
-            elif test_type in ('freebsd', 'osx', 'macos', 'rhel', 'ios', 'vyos'):
+            elif test_type in ('freebsd', 'osx', 'macos', 'rhel', 'ios', 'vyos', 'alpine', 'fedora', 'ubuntu'):
                 test_name = f'{test_type}/{test_parts[1]}'
             else:
                 test_name = None
