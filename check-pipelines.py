@@ -256,6 +256,20 @@ The types of changes are as follows:
             'vyos/1.1.8': 'vyos',
         }
 
+        # Differentiate between containers and VMs when matching platforms for add/consider reporting.
+
+        for key, value in expected.items():
+            if '/' in key:
+                expected[key] += '-vm'
+            else:
+                expected[key] += '-container'
+
+        for key, value in deprecated.items():
+            if '/' in key:
+                deprecated[key] += '-vm'
+            else:
+                deprecated[key] += '-container'
+
         tests: list[tuple[str, str | None]] = []
 
         for stage in stages:
