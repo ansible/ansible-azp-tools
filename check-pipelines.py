@@ -356,6 +356,9 @@ The types of changes are as follows:
                 if test_parts[0] == 'linux-community':
                     continue
 
+                if test_parts[0] == 'lint':
+                    continue  #  used by osbuild.composer / infra.osbuild
+
                 raise Exception(f'Test name not extracted: {test}')
 
             test_name = re.sub('-pypi-latest$', '', test_name)  # work-around for community.docker collection
