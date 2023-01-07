@@ -116,7 +116,14 @@ def find_repos() -> t.Dict[str, t.List[str]]:
     repos = {}
 
     for repo_name in sorted(repo_names):
-        repo = gh.get_repo(repo_name)
+        try:
+            repo = gh.get_repo(repo_name)
+        except github.GithubException:
+            if repo_name == 'ansible-collections/ansible.active_directory':
+                continue  # temporarily private repo
+
+            raise
+
         branches = list(repo.get_branches())
 
         all_branch_names = sorted(b.name for b in branches)
