@@ -76,6 +76,12 @@ def find_repos() -> t.Dict[str, t.List[str]]:
     build_client = connection.clients_v6_0.get_build_client()
 
     repo_names = []
+    unhandled_projects = {}
+
+    collection_github_orgs = (
+        'ansible-collections',
+        'redhat-cop',
+    )
 
     for project in get_projects(core_client):
         repositories = []
@@ -101,16 +107,31 @@ def find_repos() -> t.Dict[str, t.List[str]]:
             repo_names.append('ansible/ansible')
             continue
 
-        match = re.search(r'^https://github.com/ansible-collections/(?P<collection>.*)\.git$', repository.url)
+        handled = False
 
-        if match:
-            collection = match.group('collection')
+        for github_org in collection_github_orgs:
+            match = re.search(rf'^https://github.com/{github_org}/(?P<collection>.*)\.git$', repository.url)
 
-            if project.name != collection:
-                raise Exception(f'{project.name} != {collection}')
+            if match:
+                collection = match.group('collection')
 
-            repo_names.append(f'ansible-collections/{collection}')
+                if project.name != collection:
+                    raise Exception(f'{project.name} != {collection}')
+
+                repo_names.append(f'{github_org}/{collection}')
+                handled = True
+                break
+
+        if handled:
             continue
+
+        if '.' not in project.name:
+            continue  # ignore projects without a dot, under the assumption they're not a collection
+
+        unhandled_projects[project.name] = repository.url
+
+    if unhandled_projects:
+        raise Exception(f'Unhandled projects: {unhandled_projects}')
 
     gh = github.Github(login_or_token=get_github_token())
     repos = {}
@@ -119,9 +140,7 @@ def find_repos() -> t.Dict[str, t.List[str]]:
         try:
             repo = gh.get_repo(repo_name)
         except github.GithubException:
-            if repo_name == 'ansible-collections/ansible.active_directory':
-                continue  # temporarily private repo
-
+            # handle private repositories here (if any)
             raise
 
         branches = list(repo.get_branches())
@@ -150,7 +169,7 @@ def update_repos(base_path: str, repos: t.Dict[str, t.List[str]]) -> None:
 
             path = os.path.join(base_path, repo, branch)
 
-            if repo.startswith('ansible-collections/'):
+            if repo != 'ansible/ansible':
                 path = os.path.join(path, 'ansible_collections', repo.split('/')[1].replace('.', '/'))  # make collections usable in place
 
             stderr = sys.stderr.buffer
