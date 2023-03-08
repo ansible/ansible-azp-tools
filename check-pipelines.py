@@ -194,7 +194,7 @@ The types of changes are as follows:
         namespace, name, branch, path = config
     
         stages = config.yaml['stages']
-    
+
         # Every platform/version combination known to ansible-test in the devel branch should be listed in one of the two lists below.
         # The key is the value used for --remote or --docker.
         # The value is the platform group the target is part of.
@@ -212,7 +212,7 @@ The types of changes are as follows:
             'fedora/37': 'fedora',
             'freebsd/12.4': 'freebsd',
             'freebsd/13.1': 'freebsd',
-            'macos/12.0': 'macos',
+            'macos/13.2': 'macos',
             'rhel/7.9': 'rhel',
             'rhel/8.7': 'rhel',
             'rhel/9.1': 'rhel',
@@ -245,6 +245,7 @@ The types of changes are as follows:
             'osx/10.11': 'macos',
             'macos/10.15': 'macos',
             'macos/11.1': 'macos',
+            'macos/12.0': 'macos',
             'rhel/7.6': 'rhel',
             'rhel/7.8': 'rhel',
             'rhel/8.1': 'rhel',
