@@ -127,9 +127,9 @@ A report on each project's status can be found below.
         print(boilerplate)
 
         for config in self.settings.configs:
-            containers = config.yaml['resources']['containers']
-            default_container = [c for c in containers if c['container'] == 'default'][0]
-            default_image = default_container['image']
+            variables = {item['name']: item['value'] for item in config.yaml.get('variables', [])}
+            containers = {item['container']: item['image'] for item in config.yaml.get('resources', {}).get('containers', [])}
+            default_image = containers.get('default') or variables.get('defaultContainer')
 
             checkmark = 'X' if default_image == expected_image else ' '
 
