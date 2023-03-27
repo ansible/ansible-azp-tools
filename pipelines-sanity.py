@@ -17,8 +17,9 @@ except ImportError:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument('--check', action='store_true')
-    parser.add_argument('--test', action='append', default=[])
+    parser.add_argument('--check', action='store_true', help='stop on sanity test failure')
+    parser.add_argument('--docker', action='store_true', help='run tests using docker')
+    parser.add_argument('--test', action='append', default=[], help='run only specified test(s)')
 
     if argcomplete:
         argcomplete.autocomplete(parser)
@@ -30,7 +31,10 @@ def main() -> None:
     paths = glob.glob(os.path.expanduser(os.path.join(base_path, 'ansible-collections/*/*/ansible_collections/*/*')))
     paths = [path for path in paths if path.split(os.path.sep)[-4] in ('main', 'master')]
 
-    cmd = ['ansible-test', 'sanity', '--docker', '-v']
+    cmd = ['ansible-test', 'sanity', '-v']
+
+    if args.docker:
+        cmd.append('--docker')
 
     for test in args.test:
         cmd.extend(['--test', test])
