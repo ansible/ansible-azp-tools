@@ -162,7 +162,7 @@ The following collections tested with the `devel` branch of `ansible-core` shoul
             'opensuse15': [],
             'ubuntu2004': [],
             'ubuntu2204': [],
-            'alpine/3.17': [],
+            'alpine/3.18': ['alpine/3.17'],
             'fedora/38': ['fedora/37'],
             'freebsd/12.4': [],
             'freebsd/13.2': ['freebsd/13.1'],
