@@ -95,7 +95,7 @@ class CheckContainer:
         self.settings = settings
 
     def run(self) -> None:
-        expected_image = 'quay.io/ansible/azure-pipelines-test-container:3.0.0'
+        expected_image = 'quay.io/ansible/azure-pipelines-test-container:4.0.1'
 
         boilerplate = f'''
 ### Azure Pipelines Test Container Update
