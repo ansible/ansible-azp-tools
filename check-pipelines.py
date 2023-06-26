@@ -111,7 +111,7 @@ A report on each project's status can be found below.
 
         print(boilerplate)
 
-        for config in self.settings.configs:
+        for config in sorted(self.settings.configs, key=lambda cfg: str(cfg)):
             variables = {item['name']: item['value'] for item in config.yaml.get('variables', [])}
             containers = {item['container']: item['image'] for item in config.yaml.get('resources', {}).get('containers', [])}
             default_image = containers.get('default') or variables.get('defaultContainer')
