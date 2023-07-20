@@ -164,14 +164,13 @@ The following collections tested with the `devel` branch of `ansible-core` shoul
             'ubuntu2204': [],
             'alpine/3.18': ['alpine/3.17'],
             'fedora/38': ['fedora/37'],
-            'freebsd/12.4': [],
             'freebsd/13.2': ['freebsd/13.1'],
             'macos/13.2': [],
             'rhel/7.9': [],
             'rhel/8.8': ['rhel/8.7'],
             'rhel/9.2': ['rhel/9.1'],
             'ubuntu/22.04': ['ubuntu/20.04'],
-            '': [],  # obsolete entries with no replacement go here
+            '': ['freebsd/12.4'],  # obsolete entries with no replacement go here
         }
 
         expected = set(platforms)
