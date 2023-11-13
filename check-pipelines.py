@@ -228,7 +228,7 @@ The following collections tested with the `devel` branch of `ansible-core` shoul
                         tests.append((test, stage_display_name))
     
         tests_found = set()
-        known_ansible_branches = ('devel', '2.9', '2.10', '2.11', '2.12', '2.13', '2.14', '2.15')
+        known_ansible_branches = ('devel', '2.9', '2.10', '2.11', '2.12', '2.13', '2.14', '2.15', '2.16')
 
         for test, stage_display_name in tests:
             parts = test.split('@')[0].split('/')
