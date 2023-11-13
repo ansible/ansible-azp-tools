@@ -168,7 +168,7 @@ The following collections tested with the `devel` branch of `ansible-core` shoul
             'macos/13.2': [],
             'rhel/7.9': [],
             'rhel/8.8': ['rhel/8.7'],
-            'rhel/9.2': ['rhel/9.1'],
+            'rhel/9.3': ['rhel/9.2', 'rhel/9.1'],
             'ubuntu/22.04': ['ubuntu/20.04'],
             '': ['freebsd/12.4'],  # obsolete entries with no replacement go here
         }
