@@ -198,8 +198,13 @@ The following collections tested with the `devel` branch of `ansible-core` shoul
             jobs = stage['jobs']
             stage_display_name = stage.get('displayName', stage['stage'])
 
-            if stage_display_name == 'Dependencies':
-                continue  # community.windows uses this to setup dependencies, not run tests
+            match stage_display_name:
+                case "Dependencies":
+                    # community.windows uses this to setup dependencies, not run tests
+                    continue
+                case "Python quality":
+                    # community.postgresql uses this to setup dependencies, not run tests
+                    continue
 
             for job in jobs:
                 template = job['template']
@@ -258,7 +263,7 @@ The following collections tested with the `devel` branch of `ansible-core` shoul
                 test_parts = test_parts[1:]
                 test_type = test_parts[0]
     
-            if test_type in ('sanity', 'units', 'aws', 'cloud', 'hcloud', 'windows', 'galaxy', 'generic'):
+            if test_type in ('sanity', 'units', 'aws', 'cloud', 'hcloud', 'integration', 'windows', 'galaxy', 'generic'):
                 continue
     
             if test_type == 'linux':
