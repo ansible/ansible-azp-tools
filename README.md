@@ -3,7 +3,7 @@ Tools for working with Ansible projects using Azure Pipelines.
 
 ## Set up
 1. Install Python dependencies needed to run scripts from this repository to a preferred location using `pip install -r requirements.txt`.
-2. Populate `~/.config/ansible-azp-tools/azure-devops.key` and `~/.config/ansible-azp-tools/github.key` with Personal Access Tokens for Azure Pipelines and Github, respectively.
+2. Populate `~/.config/ansible-azp-tools/azure-devops.key` and `~/.config/ansible-azp-tools/github.key` with Personal Access Tokens for Azure Pipelines and GitHub, respectively.
 3. Run `./sync.py --find --update` to clone the repositories/branches needed for the scripts to check the configurations of the repositories.
 
 ## check-pipelines.py
