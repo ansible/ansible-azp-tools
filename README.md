@@ -14,4 +14,4 @@ Tools for working with Ansible projects using Azure Pipelines.
 Run sanity tests against the default branch of each collection in Azure Pipelines
 
 ## pipelines-yaml.py
-TBD
+Output a list of paths or a globs, for finding azure-pipelines.yml files.
