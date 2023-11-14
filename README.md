@@ -11,7 +11,7 @@ Tools for working with Ansible projects using Azure Pipelines.
 * `./check-pipelines.py container` - check for out-of-date `quay.io/ansible/azure-pipelines-test-container` versions
 
 ## pipelines-sanity.py
-TBD
+Run sanity tests against the default branch of each collection in Azure Pipelines
 
 ## pipelines-yaml.py
 TBD
