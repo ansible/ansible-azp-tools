@@ -8,7 +8,7 @@ Tools for working with Ansible projects using Azure Pipelines.
 
 ## check-pipelines.py
 * `./check-pipelines.py matrix` - checks for out-of-date Azure Pipelines configuration matrix testing against ansible-core devel branch
-* `./check-pipelines.py container` TBD
+* `./check-pipelines.py container` - check for out-of-date `quay.io/ansible/azure-pipelines-test-container` versions
 
 ## pipelines-sanity.py
 TBD
