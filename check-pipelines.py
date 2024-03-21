@@ -166,7 +166,7 @@ The following collections tested with the `devel` branch of `ansible-core` shoul
             'fedora/39': ['fedora/38'],
             'freebsd/13.3': ['freebsd/13.2', 'freebsd/13.1'],
             'freebsd/14.0': [],
-            'macos/13.3': [],
+            'macos/13.2': [],
             'rhel/7.9': [],
             'rhel/8.8': ['rhel/8.7'],
             'rhel/9.3': ['rhel/9.2', 'rhel/9.1'],
