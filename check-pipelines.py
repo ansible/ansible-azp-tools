@@ -156,22 +156,24 @@ The following collections tested with the `devel` branch of `ansible-core` shoul
         # This is the only place updates should be required when adding/removing platforms.
         # Be sure to add a new platform *and* define what it replaces at the same time.
         platforms = {
-            'alpine3': [],
-            'centos7': [],
+            'alpine319': ['alpine3'],
             'fedora39': ['fedora38'],
-            'opensuse15': [],
             'ubuntu2004': [],
             'ubuntu2204': [],
-            'alpine/3.18': ['alpine/3.17'],
+            'alpine/3.19': ['alpine/3.18'],
             'fedora/39': ['fedora/38'],
             'freebsd/13.3': ['freebsd/13.2', 'freebsd/13.1'],
             'freebsd/14.0': [],
             'macos/14.3': ['macos/13.2'],
-            'rhel/7.9': [],
-            'rhel/8.8': ['rhel/8.7'],
             'rhel/9.3': ['rhel/9.2', 'rhel/9.1'],
             'ubuntu/22.04': ['ubuntu/20.04'],
-            '': ['freebsd/12.4'],  # obsolete entries with no replacement go here
+            '': [
+                'centos7',
+                'opensuse15',
+                'freebsd/12.4',
+                'rhel/8.8',
+                'rhel/7.9',
+            ],  # obsolete entries with no replacement go here
         }
 
         expected = set(platforms)
