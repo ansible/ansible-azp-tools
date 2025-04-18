@@ -7,9 +7,8 @@ from __future__ import annotations
 import abc
 import argparse
 import contextlib
-import os
+import pathlib
 import re
-import typing as t
 
 try:
     import argcomplete
@@ -42,7 +41,7 @@ def main() -> None:
 
 
 class Config:
-    def __init__(self, namespace: str, name: str, branch: str, path: str) -> None:
+    def __init__(self, namespace: str, name: str, branch: str, path: pathlib.Path) -> None:
         self.namespace = namespace
         self.name = name
         self.branch = branch
@@ -51,37 +50,36 @@ class Config:
         with open(path) as yaml_file:
             self.yaml = yaml.load(yaml_file, Loader=yaml.SafeLoader)
 
-    def __iter__(self) -> t.Tuple[str, str, str, str]:
-        for item in self.namespace, self.name, self.branch, self.path:
-            yield item
-
     def __str__(self):
         return f'{self.namespace}.{self.name}:{self.branch}'
 
 
 class Settings:
     def __init__(self):
-        self.base_path = os.path.expanduser('~/.ansible/azp-tools/repos')
-        self.collections_path = os.path.join(self.base_path, 'ansible-collections')
-        self.ansible_path = os.path.join(self.base_path, 'ansible/ansible')
-        self.collections = os.listdir(self.collections_path)
-        self.collection_branches = {collection: os.listdir(os.path.join(self.collections_path, collection)) for collection in self.collections}
-        self.ansible_branches = os.listdir(self.ansible_path)
-        self.configs = []
+        self.configs: list[Config] = []
 
-        for collection, branches in self.collection_branches.items():
-            namespace, name = collection.split('.')
+        base_path = pathlib.Path('~/.ansible/azp-tools/repos').expanduser()
 
-            for branch in branches:
-                path = os.path.join(self.collections_path, collection, branch, 'ansible_collections', namespace, name, '.azure-pipelines/azure-pipelines.yml')
+        for source in base_path.iterdir():
+            for collection in source.iterdir():
+                for branch in collection.iterdir():
+                    if collection.name == "ansible":
+                        namespace = name = collection.name
+                        branch_path = branch
+                    else:
+                        namespace, name = collection.name.split('.')
+                        branch_path = branch / 'ansible_collections' / namespace / name
 
-                with contextlib.suppress(FileNotFoundError):
-                    self.configs.append(Config(namespace, name, branch, path))
+                    if not branch_path.is_dir():
+                        raise RuntimeError(f'{branch_path!r} is not a directory')
 
-        for branch in self.ansible_branches:
-            path = os.path.join(self.ansible_path, branch, '.azure-pipelines/azure-pipelines.yml')
-
-            self.configs.append(Config('ansible', 'ansible', branch, path))
+                    with contextlib.suppress(FileNotFoundError):
+                        self.configs.append(Config(
+                            namespace=namespace,
+                            name=name,
+                            branch=branch.name,
+                            path=branch_path / '.azure-pipelines' / 'azure-pipelines.yml',
+                        ))
 
 
 class Command(metaclass=abc.ABCMeta):
@@ -146,7 +144,7 @@ The following collections tested with the `devel` branch of `ansible-core` shoul
 '''.strip())
 
     def process_matrix(self, config: Config) -> str:
-        namespace, name, branch, path = config
+        namespace, name, branch = config.namespace, config.name, config.branch
     
         stages = config.yaml['stages']
 
@@ -156,23 +154,19 @@ The following collections tested with the `devel` branch of `ansible-core` shoul
         # This is the only place updates should be required when adding/removing platforms.
         # Be sure to add a new platform *and* define what it replaces at the same time.
         platforms = {
-            'alpine319': ['alpine3'],
-            'fedora39': ['fedora38'],
-            'ubuntu2004': [],
+            'alpine/3.21': [],
+            'alpine321': [],
+            'fedora/41': ['fedora/38'],
+            'fedora41': [],
+            'freebsd/13.5': [],
+            'freebsd/14.2': [],
+            'macos/15.3': [],
+            'rhel/9.5': ['rhel/9.2', 'rhel/9.5-dev-latest'],
+            'ubuntu/22.04': [],
+            'ubuntu/24.04': [],
             'ubuntu2204': [],
-            'alpine/3.19': ['alpine/3.18'],
-            'fedora/39': ['fedora/38'],
-            'freebsd/13.3': ['freebsd/13.2', 'freebsd/13.1'],
-            'freebsd/14.0': [],
-            'macos/14.3': ['macos/13.2'],
-            'rhel/9.3': ['rhel/9.2', 'rhel/9.1'],
-            'ubuntu/22.04': ['ubuntu/20.04'],
+            'ubuntu2404': [],
             '': [
-                'centos7',
-                'opensuse15',
-                'freebsd/12.4',
-                'rhel/8.8',
-                'rhel/7.9',
             ],  # obsolete entries with no replacement go here
         }
 
@@ -236,7 +230,20 @@ The following collections tested with the `devel` branch of `ansible-core` shoul
                         tests.append((test, stage_display_name))
     
         tests_found = set()
-        known_ansible_branches = ('devel', '2.9', '2.10', '2.11', '2.12', '2.13', '2.14', '2.15', '2.16')
+        known_ansible_branches = (
+            'devel',
+            '2.9',
+            '2.10',
+            '2.11',
+            '2.12',
+            '2.13',
+            '2.14',
+            '2.15',
+            '2.16',
+            '2.17',
+            '2.18',
+            '2.19',
+        )
 
         for test, stage_display_name in tests:
             parts = test.split('@')[0].split('/')
