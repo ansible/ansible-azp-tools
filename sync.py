@@ -14,12 +14,12 @@ import shutil
 import sys
 
 import azure.devops.connection
-import azure.devops.v6_0.build.build_client
-import azure.devops.v6_0.build.models
-import azure.devops.v6_0.core.core_client
-import azure.devops.v6_0.core.models
-import azure.devops.v6_0.pipelines.models
-import azure.devops.v6_0.pipelines.pipelines_client
+import azure.devops.v7_1.build.build_client
+import azure.devops.v7_1.build.models
+import azure.devops.v7_1.core.core_client
+import azure.devops.v7_1.core.models
+import azure.devops.v7_1.pipelines.models
+import azure.devops.v7_1.pipelines.pipelines_client
 import msrest.authentication
 
 try:
@@ -48,32 +48,32 @@ def get_connection() -> azure.devops.connection.Connection:
 
 
 def get_projects(
-        core_client: azure.devops.v6_0.core.core_client.CoreClient,
-) -> t.List[azure.devops.v6_0.core.models.TeamProjectReference]:
+        core_client: azure.devops.v7_1.core.core_client.CoreClient,
+) -> t.List[azure.devops.v7_1.core.models.TeamProjectReference]:
     return core_client.get_projects()
 
 
 def get_pipelines(
-        pipelines_client: azure.devops.v6_0.pipelines.pipelines_client.PipelinesClient,
+        pipelines_client: azure.devops.v7_1.pipelines.pipelines_client.PipelinesClient,
         project: str,
-) -> t.List[azure.devops.v6_0.pipelines.models.Pipeline]:
+) -> t.List[azure.devops.v7_1.pipelines.models.Pipeline]:
     return pipelines_client.list_pipelines(project)
 
 
 def get_definition(
-        build_client: azure.devops.v6_0.build.build_client.BuildClient,
+        build_client: azure.devops.v7_1.build.build_client.BuildClient,
         project: str,
         definition_id: int,
-) -> azure.devops.v6_0.build.models.BuildDefinition:
+) -> azure.devops.v7_1.build.models.BuildDefinition:
     return build_client.get_definition(project, definition_id)
 
 
 def find_repos() -> t.Dict[str, t.List[str]]:
     connection = get_connection()
 
-    core_client = connection.clients_v6_0.get_core_client()
-    pipelines_client = connection.clients_v6_0.get_pipelines_client()
-    build_client = connection.clients_v6_0.get_build_client()
+    core_client = connection.clients_v7_1.get_core_client()
+    pipelines_client = connection.clients_v7_1.get_pipelines_client()
+    build_client = connection.clients_v7_1.get_build_client()
 
     repo_names = []
     unhandled_projects = {}
@@ -91,7 +91,7 @@ def find_repos() -> t.Dict[str, t.List[str]]:
             web_href = urllib.parse.urlparse(pipeline._links.additional_properties['web']['href'])
             definition_id = int(urllib.parse.parse_qs(web_href.query)['definitionId'][0])
             definition = get_definition(build_client, project.name, definition_id)
-            repository: azure.devops.v6_0.build.models.BuildRepository = definition.repository
+            repository: azure.devops.v7_1.build.models.BuildRepository = definition.repository
 
             repositories.append(repository)
 
@@ -133,7 +133,7 @@ def find_repos() -> t.Dict[str, t.List[str]]:
     if unhandled_projects:
         raise Exception(f'Unhandled projects: {unhandled_projects}')
 
-    gh = github.Github(login_or_token=get_github_token())
+    gh = github.Github(auth=github.Auth.Token(get_github_token()))
     repos = {}
 
     for repo_name in sorted(repo_names):
