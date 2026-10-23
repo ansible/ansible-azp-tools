@@ -4,12 +4,12 @@
 from __future__ import annotations
 
 import argparse
+import io
 import os
 import subprocess
 import typing as t
 import urllib.parse
 import re
-import github
 import shutil
 import sys
 
@@ -21,6 +21,10 @@ import azure.devops.v7_1.core.models
 import azure.devops.v7_1.pipelines.models
 import azure.devops.v7_1.pipelines.pipelines_client
 import msrest.authentication
+
+import github
+import github.ContentFile
+import yaml
 
 try:
     import argcomplete
@@ -150,12 +154,26 @@ def find_repos() -> t.Dict[str, t.List[str]]:
         if repo_name == 'ansible/ansible':
             stable_matches = [m.group('version').split('.') for m in [re.search('stable-(?P<version>[0-9]+.[0-9]+)', b) for b in all_branch_names] if m]
             stable_versions = sorted([(int(m[0]), int(m[1])) for m in stable_matches], reverse=True)
-            latest_versions = stable_versions[:4]
+            latest_versions = stable_versions[:6]
             filtered_branch_names = ['devel'] + [f'stable-{v[0]}.{v[1]}' for v in latest_versions]
         else:
             filtered_branch_names = [b for b in all_branch_names if re.search('^(devel|main|master|stable-.*)$', b)]
 
-        repos[repo_name] = sorted(filtered_branch_names)
+        scheduled_branch_names: list[str] = []
+
+        for branch_name in filtered_branch_names:
+            try:
+                azp_content = t.cast(github.ContentFile.ContentFile, repo.get_contents('.azure-pipelines/azure-pipelines.yml', branch_name))
+            except github.UnknownObjectException:
+                continue
+
+            azp_yaml = azp_content.decoded_content.decode()
+            azp_config = yaml.load(io.StringIO(azp_yaml), Loader=yaml.SafeLoader)
+
+            if azp_config.get('schedules'):
+                scheduled_branch_names.append(branch_name)
+
+        repos[repo_name] = sorted(scheduled_branch_names)
 
     return repos
 
