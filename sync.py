@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import fnmatch
 import io
 import os
 import subprocess
@@ -141,6 +142,8 @@ def find_repos() -> t.Dict[str, t.List[str]]:
     repos = {}
 
     for repo_name in sorted(repo_names):
+        print(f"{repo_name}:")
+
         try:
             repo = gh.get_repo(repo_name)
         except github.GithubException:
@@ -170,12 +173,43 @@ def find_repos() -> t.Dict[str, t.List[str]]:
             azp_yaml = azp_content.decoded_content.decode()
             azp_config = yaml.load(io.StringIO(azp_yaml), Loader=yaml.SafeLoader)
 
-            if azp_config.get('schedules'):
+            if (disposition := get_schedule_disposition(azp_config, branch_name)) == "scheduled":
                 scheduled_branch_names.append(branch_name)
+                print(f"  {branch_name}")
+            else:
+                print(f"  {branch_name} - {disposition}")
 
         repos[repo_name] = sorted(scheduled_branch_names)
 
     return repos
+
+
+def get_schedule_disposition(azp_config: t.Any, branch_name: str) -> str:
+    if not (schedules := azp_config.get('schedules')):
+        return "no schedules"
+
+    for schedule in schedules:
+        if not (branches := schedule.get('branches')):
+            return "scheduled"
+
+        include = branches.get('include') or '*'
+        exclude = branches.get('exclude') or []
+
+        if not isinstance(include, list):
+            include = [include]
+
+        if not isinstance(exclude, list):
+            exclude = [exclude]
+
+        if not any(fnmatch.fnmatch(branch_name, item) for item in include):
+            continue
+
+        if any(fnmatch.fnmatch(branch_name, item) for item in exclude):
+            continue
+
+        return "scheduled"
+
+    return "not scheduled"
 
 
 def update_repos(base_path: str, repos: t.Dict[str, t.List[str]]) -> None:
@@ -224,12 +258,6 @@ def main() -> None:
 
     if args.find:
         repos = find_repos()
-
-        for repo, branches in repos.items():
-            print(f'{repo}:')
-
-            for branch in branches:
-                print(f'  {branch}')
     else:
         orgs = sorted(os.listdir(base_dir))
         projects = sorted(f'{org}/{project}' for org in orgs for project in os.listdir(os.path.join(base_dir, org)))
